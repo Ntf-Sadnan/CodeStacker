@@ -2,42 +2,29 @@
 
 Share your full code base with LLMs or for easy analysis. CodeStacker takes a `.zip` archive of your project, extracts and consolidates the content of relevant text files into a single, formatted `.txt` output, processed entirely in your browser.
 
+# CodeStacker
+
+Share your full code base with LLMs or for easy analysis. Takes a project `.zip`, extracts relevant code, and combines it into a single text file, processed in your browser.
+
 ## Features
 
-*   **Input:** Upload a project as a `.zip` file.
-*   **Client-Side Processing:** Your code is processed locally in your browser for privacy and speed.
-*   **Intelligent Filtering:** Automatically skips common ignored directories (`node_modules`, `.git`, build folders) and binary/image files.
-*   **Formatted Output:** Combines included file paths and their content into a single, readable text file.
-*   **Download & Copy:** Get the output as a `.txt` file or copy the content directly to your clipboard.
+*   Processes `.zip` files client-side.
+*   Automatically filters out binary/image files, hidden files/folders, and common build/dependency directories.
+*   Outputs file paths and content into a single, formatted text file.
+*   Offers download and copy-to-clipboard options.
 
 ## How to Use
-
-1.  Download or open the `index.html` file in your web browser.
-2.  Click the file upload area (or drag and drop) to select your project's `.zip` archive.
+1.  Open `index.html` in your browser. (or just visit )
+2.  Upload your project's `.zip` file.
 3.  Click "Process & Create Stack".
-4.  Once complete, use the "Download" or "Copy" buttons to get your bundled code.
+4.  Use the Download or Copy button for the output.
 
-## What Gets Included / Ignored?
+## What's Included/Ignored
 
-CodeStacker aims to include only relevant text-based code files. It skips:
-
-*   Directories themselves (only files within are processed).
-*   Common binary files (like `.exe`, `.dll`, `.pdf`).
-*   Image files (like `.jpg`, `.png`, `.svg`).
-*   Hidden files and directories (starting with `.`, e.g., `.git`, `.vscode`, `.env`).
-*   Common dependency/build folders (`node_modules`, `vendor`, `dist`, `build`, `__pycache__`, etc.).
-*   Files that appear to be binary based on a simple content check.
-
-The output format is typically the file path followed by the file content, enclosed in code block-like delimiters.
+Includes text-based code files. Skips binary files, images, hidden files/folders, and directories like `node_modules`, `.git`, `dist`, etc.
 
 ## Running Locally
 
-This project is a single HTML file. Simply download the `index.html` file and open it directly with any modern web browser. No installation or server is required.
+Open the `index.html` file directly in any modern web browser. No server is required.
 
-## Credits
 
-Created by [Ntf Sadnan](https://github.com/ntf-sadnan).
-
-## License
-
-This project is licensed under the MIT License.
