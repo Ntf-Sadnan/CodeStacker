@@ -1,6 +1,6 @@
 # CodeStacker
 
-Share your full code base with LLMs or for easy analysis. CodeStacker takes a `.zip` archive of your project, extracts and consolidates the content of relevant text files into a single, formatted `.txt` output, processed entirely in your browser.
+Share your full code base with LLMs or for easy analysis. CodeStacker takes a `.zip` archive of your project, extracts and consolidates the content of relevant text files into a single, formatted `.txt` output, processed entirely in your browser. 
 
 ## Features
 
@@ -19,8 +19,4 @@ Share your full code base with LLMs or for easy analysis. CodeStacker takes a `.
 
 Includes text-based code files. Skips binary files, images, hidden files/folders, and directories like `node_modules`, `.git`, `dist`, etc.
 
-## Running Locally
-
-Open the `index.html` file directly in any modern web browser. No server is required.
-
-
+### It's vibe coded with ❤
