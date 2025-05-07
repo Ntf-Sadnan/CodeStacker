@@ -10,7 +10,7 @@ Share your full code base with LLMs or for easy analysis. CodeStacker takes a `.
 *   Offers download and copy-to-clipboard options.
 
 ## How to Use
-1.  Open `index.html` in your browser. (or just visit )
+1.  Open `index.html` in your browser. (or just visit https://ntf-sadnan.github.io/CodeStacker)
 2.  Upload your project's `.zip` file.
 3.  Click "Process & Create Stack".
 4.  Use the Download or Copy button for the output.
