@@ -2,10 +2,6 @@
 
 Share your full code base with LLMs or for easy analysis. CodeStacker takes a `.zip` archive of your project, extracts and consolidates the content of relevant text files into a single, formatted `.txt` output, processed entirely in your browser.
 
-# CodeStacker
-
-Share your full code base with LLMs or for easy analysis. Takes a project `.zip`, extracts relevant code, and combines it into a single text file, processed in your browser.
-
 ## Features
 
 *   Processes `.zip` files client-side.
