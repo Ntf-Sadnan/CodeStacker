@@ -1,0 +1,770 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CodeStacker - Project Code Bundler</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <style>
+        :root {
+            --bg-color: #f9fafb; /* Tailwind gray-50 / Vercel-like page background */
+            --card-bg-color: #ffffff;
+            --border-color: #e5e7eb; /* Tailwind gray-200 */
+            --text-primary: #111827; /* Tailwind gray-900 */
+            --text-secondary: #6b7280; /* Tailwind gray-500 */
+            --text-placeholder: #9ca3af; /* Tailwind gray-400 */
+
+            --accent-bg: #000000; /* Black for primary buttons (Vercel style) */
+            --accent-text: #ffffff;
+            --accent-hover-bg: #1f2937; /* Darker gray */
+
+            --success-bg-light: #f0fdf4; /* Tailwind green-50 */
+            --success-text: #15803d;    /* Tailwind green-700 */
+            --success-border: #bbf7d0; /* Tailwind green-300 */
+            --success-icon: #22c55e;   /* Tailwind green-500 */
+
+            --error-bg-light: #fef2f2;  /* Tailwind red-50 */
+            --error-text: #b91c1c;    /* Tailwind red-700 */
+            --error-border: #fecaca;  /* Tailwind red-300 */
+            --error-icon: #ef4444;    /* Tailwind red-500 */
+
+            --info-bg-light: #eff6ff; /* Tailwind blue-50 */
+            --info-text: #1d4ed8;    /* Tailwind blue-700 */
+            --info-border: #bfdbfe;  /* Tailwind blue-300 */
+            --info-icon: #3b82f6;    /* Tailwind blue-500 */
+
+            --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            --border-radius: 6px; /* Slightly sharper radius */
+            --transition-speed: 0.15s ease-in-out;
+        }
+
+        *, *::before, *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: var(--font-sans);
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            display: flex;
+            flex-direction: column; /* For container and footer */
+            justify-content: center;
+            align-items: center; /* Center container and footer */
+            min-height: 100vh;
+            padding: 5vh 20px; /* Vertical padding based on viewport height */
+            font-size: 14px; /* Common base for pro UIs */
+            line-height: 1.6;
+        }
+
+        .container {
+            background-color: var(--card-bg-color);
+            padding: 32px;
+            border-radius: var(--border-radius);
+            border: 1px solid var(--border-color);
+            box-shadow: 0 1px 2px 0 rgba(0,0,0,0.03), 0 1px 6px -1px rgba(0,0,0,0.02), 0 2px 4px 0 rgba(0,0,0,0.02); /* Very subtle shadow */
+            width: 100%;
+            max-width: 560px;
+        }
+
+        .header {
+            margin-bottom: 28px;
+        }
+
+        .header h1 {
+            font-size: 20px;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 6px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .header h1 .fa-solid, .header h1 .fa-regular {
+            color: var(--text-secondary); /* Using secondary for the icon color as per theme */
+            font-size: 18px;
+        }
+        /* Custom icon for CodeStacker */
+        .fa-layer-group {
+            color: #3b82f6; /* A nice blue */
+        }
+
+
+        .header p {
+            font-size: 14px;
+            color: var(--text-secondary);
+            line-height: 1.5;
+        }
+
+        /* Custom File Input Area */
+        .file-upload-wrapper {
+            position: relative;
+            margin-bottom: 24px;
+        }
+
+        .file-upload-area { /* This is the <label> */
+            position: relative;
+            border: 1px dashed var(--border-color);
+            border-radius: var(--border-radius);
+            padding: 24px;
+            text-align: center;
+            cursor: pointer;
+            background-color: var(--bg-color);
+            transition: border-color var(--transition-speed), background-color var(--transition-speed);
+            overflow: hidden;
+            min-height: 100px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+        .file-upload-area:hover, .file-upload-area.dragover {
+            border-color: var(--accent-bg); /* Black border on hover/dragover */
+            background-color: #f3f4f6; /* Slightly darker gray for hover */
+        }
+
+        .file-upload-area input[type="file"] {
+            position: absolute;
+            left: -9999px;
+            top: -9999px;
+            width: 1px;
+            height: 1px;
+            opacity: 0;
+            z-index: -1;
+            pointer-events: none;
+            appearance: none;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            border: none !important;
+            outline: none !important;
+            box-shadow: none !important;
+            background: transparent !important;
+        }
+
+        .file-upload-content {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            color: var(--text-secondary);
+            position: relative;
+            z-index: 1;
+        }
+
+        .file-upload-icon .fa-solid {
+            font-size: 24px;
+            color: var(--text-placeholder);
+            margin-bottom: 4px;
+        }
+
+        .file-upload-text strong {
+            color: var(--accent-bg); /* Black for "Click to upload" */
+            font-weight: 500;
+        }
+         .file-upload-text span {
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+
+        .file-upload-hint {
+            font-size: 12px;
+            color: var(--text-placeholder);
+        }
+
+        .file-name-display {
+            font-size: 13px;
+            color: var(--text-primary);
+            margin-top: 12px;
+            min-height: 1.5em;
+            word-break: break-all;
+            background-color: var(--bg-color); /* Light background for filename */
+            padding: 6px 10px;
+            border-radius: 4px;
+            border: 1px solid var(--border-color);
+            display: none;
+            text-align: left;
+            width: 100%;
+        }
+        .file-name-display.visible {
+            display: block;
+        }
+
+        /* Buttons */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            width: 100%; /* Default to full width */
+            padding: 10px 16px;
+            border: 1px solid transparent;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            text-decoration: none;
+            transition: background-color var(--transition-speed), border-color var(--transition-speed), color var(--transition-speed), box-shadow var(--transition-speed);
+            white-space: nowrap;
+        }
+        .btn:focus-visible {
+            outline: 2px solid var(--accent-bg);
+            outline-offset: 2px;
+        }
+
+        .btn-primary {
+            background-color: var(--accent-bg);
+            color: var(--accent-text);
+            border-color: var(--accent-bg);
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+        }
+        .btn-primary:hover:not(:disabled) {
+            background-color: var(--accent-hover-bg);
+            border-color: var(--accent-hover-bg);
+        }
+        .btn-primary:disabled {
+            background-color: #e5e7eb; /* Tailwind gray-200 for disabled */
+            border-color: #e5e7eb;
+            color: #9ca3af; /* Tailwind gray-400 for disabled text */
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+        .btn .fa-solid, .btn .fa-regular {
+            font-size: 13px;
+            line-height: 1;
+        }
+        .btn .fa-spinner {
+             animation: spin 0.7s linear infinite;
+        }
+
+        .btn-success {
+            background-color: var(--success-bg-light);
+            color: var(--success-text);
+            border: 1px solid var(--success-border);
+            font-weight: 500;
+        }
+        .btn-success:hover:not(:disabled) {
+            background-color: #dcfce7; /* Tailwind green-100 for hover */
+            border-color: #86efac; /* Tailwind green-300 for hover */
+        }
+        .btn-success .fa-solid, .btn-success .fa-regular {
+            color: var(--success-icon);
+        }
+
+        /* Added style for secondary button (Copy button) */
+        .btn-secondary {
+            background-color: var(--card-bg-color);
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+            font-weight: 500;
+        }
+        .btn-secondary:hover:not(:disabled) {
+             background-color: var(--bg-color);
+             border-color: #d1d5db; /* Tailwind gray-300 for hover */
+        }
+         .btn-secondary:focus-visible {
+            outline: 2px solid var(--border-color); /* Match primary or a neutral focus */
+            outline-offset: 2px;
+        }
+         .btn-secondary:disabled {
+            background-color: #f3f4f6; /* Tailwind gray-100 for disabled */
+            border-color: #e5e7eb;
+            color: #9ca3af; /* Tailwind gray-400 for disabled text */
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+
+
+        #outputArea {
+            margin-top: 24px;
+            /* text-align: center; Removed to align message left */
+        }
+
+        .message {
+            display: flex;
+            align-items: flex-start; /* Align icon and text to the top */
+            gap: 10px;
+            padding: 12px 16px;
+            border-radius: var(--border-radius);
+            border: 1px solid;
+            margin-top: 20px;
+            font-size: 14px;
+            text-align: left;
+            line-height: 1.5;
+        }
+        .message .fa-solid, .message .fa-regular {
+            font-size: 18px;
+            margin-top: 2px; /* Slight adjustment for icon alignment */
+            flex-shrink: 0;
+        }
+        .message > div { /* Ensure text part takes remaining space */
+            flex-grow: 1;
+        }
+
+        .error-message {
+            background-color: var(--error-bg-light);
+            color: var(--error-text);
+            border-color: var(--error-border);
+        }
+        .error-message .fa-solid, .error-message .fa-regular {
+            color: var(--error-icon);
+        }
+        .error-message strong {
+            color: var(--error-text); /* Ensure strong text also uses error color */
+            font-weight: 600;
+        }
+        .info-message {
+            background-color: var(--info-bg-light);
+            color: var(--info-text);
+            border-color: var(--info-border);
+        }
+        .info-message .fa-solid, .info-message .fa-regular {
+            color: var(--info-icon);
+        }
+        .info-message strong {
+            color: var(--info-text);
+            font-weight: 600;
+        }
+
+        /* New style for button group */
+        .output-actions {
+            display: flex;
+            gap: 10px; /* Space between buttons */
+            margin-top: 20px; /* Space below message */
+            width: 100%; /* Take full width of outputArea */
+        }
+        .output-actions .btn {
+            flex: 1; /* Each button takes equal space */
+            width: auto; /* Override default 100% width */
+        }
+
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 40px;
+            padding-bottom: 20px;
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+        .footer a {
+            color: var(--text-primary);
+            text-decoration: none;
+            font-weight: 500;
+        }
+        .footer a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1><i class="fa-solid fa-layer-group"></i>CodeStacker</h1>
+            <p>Upload a .zip archive of your project. CodeStacker will extract and consolidate all relevant file paths and their contents into a single text file, perfect for analysis, documentation, or sharing with LLMs. All processing is done securely in your browser.</p>
+        </div>
+
+        <form id="uploadForm"> <!-- Removed enctype, not needed for client-side -->
+            <div class="file-upload-wrapper">
+                <label for="zipfile" class="file-upload-area">
+                    <input type="file" id="zipfile" name="zipfile" accept=".zip" required>
+                    <div class="file-upload-content">
+                        <div class="file-upload-icon">
+                            <i class="fa-solid fa-arrow-up-from-bracket"></i>
+                        </div>
+                        <div class="file-upload-text">
+                            <strong>Click to upload</strong><span> or drag and drop</span>
+                        </div>
+                        <div class="file-upload-hint">.ZIP archive only (Max 50MB recommended)</div>
+                    </div>
+                </label>
+                <div class="file-name-display" id="fileNameDisplay"></div>
+            </div>
+
+            <button type="submit" id="submitButton" class="btn btn-primary">
+                <i class="fa-solid fa-gears"></i> Process & Create Stack
+            </button>
+        </form>
+
+        <div id="outputArea">
+            <!-- Download link, Copy button, or error/info message will appear here -->
+        </div>
+    </div>
+
+    <div class="footer">
+        Created by <a href="https://github.com/ntfsadnan" target="_blank" rel="noopener noreferrer">Ntf Sadnan</a>
+    </div>
+
+    <!-- JSZip Library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+
+    <script>
+        const uploadForm = document.getElementById('uploadForm');
+        const fileInput = document.getElementById('zipfile');
+        const fileUploadArea = document.querySelector('.file-upload-area');
+        const submitButton = document.getElementById('submitButton');
+        const outputArea = document.getElementById('outputArea');
+        const fileNameDisplay = document.getElementById('fileNameDisplay');
+
+        const originalButtonIconHTML = '<i class="fa-solid fa-gears"></i>';
+        const originalButtonText = 'Process & Create Stack';
+
+        // List of common image file extensions to ignore (case-insensitive)
+        const IGNORED_IMAGE_EXTENSIONS = [
+            '.jpg', '.jpeg', '.png', '.gif', '.bmp', '.tiff', '.tif', '.webp', '.svg', '.ico',
+            '.avif', '.apng', '.jfif', '.pjpeg', '.pjp'
+        ];
+        // List of common binary/compiled/lock files to ignore
+        const IGNORED_BINARY_LIKE_EXTENSIONS = [
+            '.exe', '.dll', '.so', '.o', '.a', '.lib', '.jar', '.war', '.ear', '.class',
+            '.pyc', '.pyo', '.pyd', '.DS_Store', '.lock', '.pdf', '.doc', '.docx', '.xls', '.xlsx',
+            '.ppt', '.pptx', '.zip', '.tar', '.gz', '.rar', '.7z', '.iso', '.dmg', '.app',
+            '.mp3', '.mp4', '.avi', '.mov', '.flv', '.wmv', '.mkv', '.webm', '.ogg', '.wav',
+            '.eot', '.ttf', '.woff', '.woff2', // fonts
+            '.psd', '.ai', '.eps', // design files
+        ];
+        const IGNORED_DIRECTORIES = [
+            'node_modules', '__pycache__', '.git', '.svn', '.hg', '.vscode', '.idea',
+            'vendor', 'dist', 'build', 'target', 'out', 'bin', 'obj', 'venv', 'env',
+            'Pods', 'cmake-build-debug', 'cmake-build-release' // Common build/dependency dirs
+        ];
+
+        fileInput.addEventListener('change', function() {
+            if (this.files.length > 0) {
+                fileNameDisplay.textContent = `Selected: ${this.files[0].name}`;
+                fileNameDisplay.classList.add('visible');
+                outputArea.innerHTML = ''; // Clear previous messages on new file selection
+            } else {
+                fileNameDisplay.textContent = '';
+                fileNameDisplay.classList.remove('visible');
+            }
+        });
+
+        // Drag and drop handling
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            fileUploadArea.addEventListener(eventName, preventDefaults, false);
+            document.body.addEventListener(eventName, preventDefaults, false); // Prevent browser opening file
+        });
+
+        function preventDefaults(e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+
+        ['dragenter', 'dragover'].forEach(eventName => {
+            fileUploadArea.addEventListener(eventName, () => fileUploadArea.classList.add('dragover'), false);
+        });
+        ['dragleave', 'drop'].forEach(eventName => {
+            fileUploadArea.addEventListener(eventName, () => fileUploadArea.classList.remove('dragover'), false);
+        });
+
+        fileUploadArea.addEventListener('drop', (e) => {
+            const dt = e.dataTransfer;
+            const files = dt.files;
+            if (files.length > 0 && files[0].name.toLowerCase().endsWith('.zip')) {
+                fileInput.files = files;
+                const event = new Event('change', { bubbles: true });
+                fileInput.dispatchEvent(event);
+            } else if (files.length > 0) {
+                outputArea.innerHTML = `<div class="message error-message">
+                                            <i class="fa-solid fa-circle-exclamation"></i>
+                                            <div><strong>Invalid File:</strong> Please drop a .ZIP archive. You dropped: ${files[0].name}</div>
+                                        </div>`;
+                fileNameDisplay.textContent = '';
+                fileNameDisplay.classList.remove('visible');
+                fileInput.value = ''; // Clear the actual input
+            }
+        });
+
+        // Helper function to get file extension (robust)
+        function getFileExtension(filename) {
+            const name = filename || '';
+            const lastDot = name.lastIndexOf('.');
+            if (lastDot === -1 || lastDot === 0 || lastDot === name.length - 1) {
+                return ''; // No extension or hidden file like .bashrc
+            }
+            return name.substring(lastDot).toLowerCase(); // Include the dot, e.g., '.txt'
+        }
+
+        uploadForm.addEventListener('submit', async function(event) {
+            event.preventDefault();
+
+            if (!fileInput.files.length) {
+                outputArea.innerHTML = `<div class="message error-message">
+                                            <i class="fa-solid fa-circle-exclamation"></i>
+                                            <div><strong>Upload Error:</strong> Please select a .ZIP file.</div>
+                                        </div>`;
+                return;
+            }
+
+            const file = fileInput.files[0];
+            if (!file.name.toLowerCase().endsWith('.zip')) {
+                 outputArea.innerHTML = `<div class="message error-message">
+                                            <i class="fa-solid fa-circle-exclamation"></i>
+                                            <div><strong>Invalid File Type:</strong> Only .ZIP files are allowed. You selected: ${file.name}</div>
+                                         </div>`;
+                return;
+            }
+             // Basic size check (e.g., 50MB) - browser might struggle with very large client-side unzipping
+            const maxSize = 50 * 1024 * 1024; // 50MB
+            if (file.size > maxSize) {
+                outputArea.innerHTML = `<div class="message error-message">
+                                            <i class="fa-solid fa-circle-exclamation"></i>
+                                            <div><strong>File Too Large:</strong> Max file size is ${maxSize / (1024*1024)}MB. Your file is ${(file.size / (1024*1024)).toFixed(2)}MB.</div>
+                                         </div>`;
+                return;
+            }
+
+
+            outputArea.innerHTML = ''; // Clear previous results
+            submitButton.disabled = true;
+            submitButton.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Processing...';
+
+            try {
+                const reader = new FileReader();
+                reader.onload = async function(e) {
+                    let outputString = ''; // Declare outputString outside the try block
+                    try {
+                        const zip = await JSZip.loadAsync(e.target.result);
+                        outputString = `Project: ${file.name}\n\n`; // Assign here
+                        const originalZipName = file.name.substring(0, file.name.lastIndexOf('.')) || file.name;
+                        let processedFileCount = 0;
+                        let skippedFilesLog = "Skipped files/directories:\n";
+                        let hasSkippedFiles = false;
+
+                        const fileProcessingPromises = [];
+
+                        zip.forEach((relativePath, zipEntry) => {
+                            const entryPath = zipEntry.name.replace(/\\/g, '/'); // Normalize path separators
+                            const pathSegments = entryPath.split('/').filter(segment => segment.length > 0); // Filter out empty segments from trailing slashes
+
+                            // Skip if directory is in IGNORED_DIRECTORIES
+                            if (pathSegments.some(segment => IGNORED_DIRECTORIES.includes(segment.toLowerCase()))) {
+                                // console.log(`Skipping directory in ignored list: ${entryPath}`); // Keep console log for debugging
+                                skippedFilesLog += `- ${entryPath} (ignored directory rule)\n`;
+                                hasSkippedFiles = true;
+                                return;
+                            }
+
+                            // Check if any segment (folder or file name) starts with a dot (excluding .well-known)
+                            const isDotFileOrInDotFolder = pathSegments.some(segment => segment.startsWith('.') && segment !== '.well-known');
+                            const fileExtension = getFileExtension(entryPath);
+                            const isImageFile = IGNORED_IMAGE_EXTENSIONS.includes(fileExtension);
+                            const isBinaryLikeFile = IGNORED_BINARY_LIKE_EXTENSIONS.includes(fileExtension);
+
+
+                            if (!zipEntry.dir && !isDotFileOrInDotFolder && !isImageFile && !isBinaryLikeFile) {
+                                fileProcessingPromises.push(
+                                    zipEntry.async("string")
+                                        .then(content => {
+                                            // Basic check for binary-like content (e.g., many null chars or non-printable ASCII)
+                                            // This is a heuristic and might not be perfect.
+                                            if (content.includes('\u0000') || /[\x00-\x08\x0E-\x1F]/.test(content.substring(0,1024))) {
+                                                // console.warn(`Skipping likely binary file (heuristic): ${entryPath}`); // Keep console log
+                                                outputString += `\`\`\`${entryPath}\n`;
+                                                outputString += `[Content appears to be binary or non-UTF8, skipped]\n`;
+                                                outputString += "```\n\n";
+                                                skippedFilesLog += `- ${entryPath} (heuristic: likely binary/non-UTF8)\n`;
+                                                hasSkippedFiles = true;
+                                            } else {
+                                                outputString += `\`\`\`${entryPath}\n`;
+                                                outputString += content.trimEnd(); // Trim trailing whitespace from content
+                                                outputString += "\n```\n\n";
+                                            }
+                                            processedFileCount++;
+                                        })
+                                        .catch(readError => {
+                                            outputString += `\`\`\`${entryPath}\n`;
+                                            outputString += `[Error reading content for ${entryPath}: ${readError.message}. File might be binary or have an incompatible encoding.]\n`;
+                                            outputString += "```\n\n";
+                                            console.warn(`Could not decode ${entryPath}.`, readError.message);
+                                            processedFileCount++; // Still count it as processed to indicate an attempt
+                                            skippedFilesLog += `- ${entryPath} (error reading content: ${readError.message})\n`;
+                                            hasSkippedFiles = true;
+                                        })
+                                );
+                            } else {
+                                if (zipEntry.dir) {
+                                    // Skipping directories is standard/intentional, no need to log unless debugging
+                                } else if (isDotFileOrInDotFolder) {
+                                    // console.log(`Skipping dotfile/folder: ${entryPath}`); // Keep console log
+                                    skippedFilesLog += `- ${entryPath} (dotfile/in dotfolder)\n`; hasSkippedFiles = true;
+                                } else if (isImageFile) {
+                                    // console.log(`Skipping image file: ${entryPath}`); // Keep console log
+                                    skippedFilesLog += `- ${entryPath} (image file)\n`; hasSkippedFiles = true;
+                                } else if (isBinaryLikeFile) {
+                                     // console.log(`Skipping binary-like file by extension: ${entryPath}`); // Keep console log
+                                     skippedFilesLog += `- ${entryPath} (binary-like extension)\n`; hasSkippedFiles = true;
+                                }
+                            }
+                        });
+
+                        // Wait for all file reading promises to resolve
+                        await Promise.all(fileProcessingPromises);
+
+                        // Add the skipped files log at the end if there were any
+                        if (hasSkippedFiles) {
+                             skippedFilesLog = skippedFilesLog.trim(); // Clean up the log
+                            // console.log("\n--- Skipped Files/Directories Log ---"); // Keep console log
+                            // console.log(skippedFilesLog); // Keep console log
+                            outputString += "\n--- Log of Skipped Files/Directories ---\n" + skippedFilesLog + "\n";
+                        }
+
+
+                        if (processedFileCount === 0) {
+                            const emptyMessage = "The .ZIP file was empty, contained only ignored file types (e.g., images, binaries, dotfiles), or no processable text files were found.";
+                            outputArea.innerHTML = `<div class="message info-message">
+                                                        <i class="fa-solid fa-circle-info"></i>
+                                                        <div><strong>No Files Processed:</strong> ${emptyMessage}</div>
+                                                    </div>`;
+                            if (hasSkippedFiles) {
+                                const details = document.createElement('details');
+                                const summary = document.createElement('summary');
+                                summary.textContent = 'View skipped files log';
+                                summary.style.cursor = 'pointer';
+                                summary.style.marginTop = '10px';
+                                const pre = document.createElement('pre');
+                                pre.textContent = skippedFilesLog;
+                                pre.style.textAlign = 'left';
+                                pre.style.maxHeight = '200px';
+                                pre.style.overflowY = 'auto';
+                                pre.style.backgroundColor = 'var(--bg-color)';
+                                pre.style.padding = '10px';
+                                pre.style.border = '1px solid var(--border-color)';
+                                pre.style.borderRadius = 'var(--border-radius)';
+                                pre.style.whiteSpace = 'pre-wrap'; /* Ensure text wraps */
+                                pre.style.wordBreak = 'break-word'; /* Break long words */
+                                details.appendChild(summary);
+                                details.appendChild(pre);
+                                outputArea.querySelector('.message > div').appendChild(details); // Append to the div inside the message
+                            }
+                        } else {
+                            // --- Success State: Add Download and Copy Buttons ---
+
+                            // 1. Add Success Message
+                            const successMessage = document.createElement('div');
+                            successMessage.classList.add('message', 'info-message'); // Using info for less "in your face" success
+                            successMessage.innerHTML = `
+                                <i class="fa-solid fa-check-circle"></i>
+                                <div><strong>Success!</strong> Your CodeStack is ready. ${processedFileCount} file(s) processed.</div>
+                            `;
+                            outputArea.appendChild(successMessage);
+
+                             // Add skipped files log details under the message if any
+                             if (hasSkippedFiles) {
+                                const details = document.createElement('details');
+                                const summary = document.createElement('summary');
+                                summary.textContent = 'View skipped files log';
+                                summary.style.cursor = 'pointer';
+                                summary.style.marginTop = '10px';
+                                const pre = document.createElement('pre');
+                                pre.textContent = skippedFilesLog;
+                                pre.style.textAlign = 'left';
+                                pre.style.maxHeight = '200px';
+                                pre.style.overflowY = 'auto';
+                                pre.style.backgroundColor = 'var(--bg-color)';
+                                pre.style.padding = '10px';
+                                pre.style.border = '1px solid var(--border-color)';
+                                pre.style.borderRadius = 'var(--border-radius)';
+                                pre.style.whiteSpace = 'pre-wrap'; /* Ensure text wraps */
+                                pre.style.wordBreak = 'break-word'; /* Break long words */
+                                details.appendChild(summary);
+                                details.appendChild(pre);
+                                successMessage.querySelector('div').appendChild(details); // Append to the div inside the message
+                            }
+
+                            // 2. Create a container for buttons
+                            const outputActions = document.createElement('div');
+                            outputActions.classList.add('output-actions');
+
+                            // 3. Create Download Link (as a button)
+                            const blob = new Blob([outputString.trimEnd()], { type: 'text/plain;charset=utf-8' });
+                            const downloadUrl = URL.createObjectURL(blob);
+                            const downloadLink = document.createElement('a');
+                            downloadLink.href = downloadUrl;
+                            const filename = `${originalZipName}_stack.txt`;
+                            downloadLink.download = filename;
+                            downloadLink.innerHTML = `<i class="fa-solid fa-download"></i> Download`; // Changed icon
+                            downloadLink.classList.add('btn', 'btn-success');
+                            outputActions.appendChild(downloadLink);
+
+                            // 4. Create Copy Button
+                            const copyButton = document.createElement('button');
+                            copyButton.type = 'button'; // Important for button not to submit form
+                            copyButton.innerHTML = `<i class="fa-solid fa-copy"></i> Copy`;
+                            copyButton.classList.add('btn', 'btn-secondary'); // Use the new secondary style
+                            outputActions.appendChild(copyButton);
+
+                            // 5. Add Button Container to Output Area
+                            outputArea.appendChild(outputActions);
+
+                            // 6. Add Copy Functionality
+                            const originalCopyButtonHTML = copyButton.innerHTML;
+                            copyButton.addEventListener('click', async () => {
+                                try {
+                                    await navigator.clipboard.writeText(outputString.trimEnd()); // Copy the trimmed content
+                                    // Provide feedback
+                                    copyButton.innerHTML = '<i class="fa-solid fa-check"></i> Copied!'; // Change icon and text
+                                    copyButton.disabled = true; // Disable during feedback
+                                    // Revert after a few seconds
+                                    setTimeout(() => {
+                                        copyButton.innerHTML = originalCopyButtonHTML;
+                                        copyButton.disabled = false; // Re-enable
+                                    }, 2500); // Show "Copied!" for 2.5 seconds
+                                } catch (err) {
+                                    console.error('Failed to copy text:', err);
+                                    // Provide error feedback (optional, could just log error)
+                                     copyButton.innerHTML = '<i class="fa-solid fa-xmark"></i> Copy Failed'; // Change icon and text
+                                      copyButton.disabled = true; // Disable during feedback
+                                     setTimeout(() => {
+                                        copyButton.innerHTML = originalCopyButtonHTML;
+                                        copyButton.disabled = false; // Re-enable
+                                    }, 3000); // Show "Failed" a bit longer
+                                }
+                            });
+                        }
+
+                    } catch (zipError) {
+                        console.error('Error processing ZIP file:', zipError);
+                        outputArea.innerHTML = `<div class="message error-message">
+                                                    <i class="fa-solid fa-circle-xmark"></i>
+                                                    <div><strong>ZIP Processing Error:</strong> ${zipError.message}. The file might be corrupted or not a valid .ZIP archive.</div>
+                                                </div>`;
+                    } finally {
+                        submitButton.disabled = false;
+                        submitButton.innerHTML = `${originalButtonIconHTML} ${originalButtonText}`;
+                    }
+                };
+
+                reader.onerror = function(e) {
+                    console.error("FileReader error:", e);
+                    outputArea.innerHTML = `<div class="message error-message">
+                                                <i class="fa-solid fa-triangle-exclamation"></i>
+                                                <div><strong>File Reading Error:</strong> Could not read the selected file.</div>
+                                            </div>`;
+                    submitButton.disabled = false;
+                    submitButton.innerHTML = `${originalButtonIconHTML} ${originalButtonText}`;
+                };
+
+                reader.readAsArrayBuffer(file);
+
+            } catch (error) { // Catch any synchronous error before FileReader starts
+                outputArea.innerHTML = `<div class="message error-message">
+                                            <i class="fa-solid fa-triangle-exclamation"></i>
+                                            <div><strong>Client-Side Error:</strong> ${error.message}</div>
+                                        </div>`;
+                console.error('Error setting up file processing:', error);
+                submitButton.disabled = false;
+                submitButton.innerHTML = `${originalButtonIconHTML} ${originalButtonText}`;
+            }
+        });
+    </script>
+</body>
+</html>
