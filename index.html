@@ -533,30 +533,27 @@ code
             try {
                 const reader = new FileReader();
                 reader.onload = async function(e) {
-                    let outputString = ''; // Declare outputString outside the try block
+                    let outputString = ''; 
                     try {
                         const zip = await JSZip.loadAsync(e.target.result);
-                        outputString = `Project: ${file.name}\n\n`; // Assign here
+                        // outputString = `Project: ${file.name}\n\n`; // MODIFIED: Removed Project name from outputString
                         const originalZipName = file.name.substring(0, file.name.lastIndexOf('.')) || file.name;
                         let processedFileCount = 0;
-                        let skippedFilesLog = "Skipped files/directories:\n";
+                        let skippedFilesLog = "Skipped files/directories:\n"; // This is for UI display, not for outputString
                         let hasSkippedFiles = false;
 
                         const fileProcessingPromises = [];
 
                         zip.forEach((relativePath, zipEntry) => {
                             const entryPath = zipEntry.name.replace(/\\/g, '/'); // Normalize path separators
-                            const pathSegments = entryPath.split('/').filter(segment => segment.length > 0); // Filter out empty segments from trailing slashes
+                            const pathSegments = entryPath.split('/').filter(segment => segment.length > 0); 
 
-                            // Skip if directory is in IGNORED_DIRECTORIES
                             if (pathSegments.some(segment => IGNORED_DIRECTORIES.includes(segment.toLowerCase()))) {
-                                // console.log(`Skipping directory in ignored list: ${entryPath}`); // Keep console log for debugging
                                 skippedFilesLog += `- ${entryPath} (ignored directory rule)\n`;
                                 hasSkippedFiles = true;
                                 return;
                             }
 
-                            // Check if any segment (folder or file name) starts with a dot (excluding .well-known)
                             const isDotFileOrInDotFolder = pathSegments.some(segment => segment.startsWith('.') && segment !== '.well-known');
                             const fileExtension = getFileExtension(entryPath);
                             const isImageFile = IGNORED_IMAGE_EXTENSIONS.includes(fileExtension);
@@ -567,10 +564,7 @@ code
                                 fileProcessingPromises.push(
                                     zipEntry.async("string")
                                         .then(content => {
-                                            // Basic check for binary-like content (e.g., many null chars or non-printable ASCII)
-                                            // This is a heuristic and might not be perfect.
                                             if (content.includes('\u0000') || /[\x00-\x08\x0E-\x1F]/.test(content.substring(0,1024))) {
-                                                // console.warn(`Skipping likely binary file (heuristic): ${entryPath}`); // Keep console log
                                                 outputString += `\`\`\`${entryPath}\n`;
                                                 outputString += `[Content appears to be binary or non-UTF8, skipped]\n`;
                                                 outputString += "```\n\n";
@@ -578,7 +572,7 @@ code
                                                 hasSkippedFiles = true;
                                             } else {
                                                 outputString += `\`\`\`${entryPath}\n`;
-                                                outputString += content.trimEnd(); // Trim trailing whitespace from content
+                                                outputString += content.trimEnd(); 
                                                 outputString += "\n```\n\n";
                                             }
                                             processedFileCount++;
@@ -588,36 +582,30 @@ code
                                             outputString += `[Error reading content for ${entryPath}: ${readError.message}. File might be binary or have an incompatible encoding.]\n`;
                                             outputString += "```\n\n";
                                             console.warn(`Could not decode ${entryPath}.`, readError.message);
-                                            processedFileCount++; // Still count it as processed to indicate an attempt
+                                            processedFileCount++; 
                                             skippedFilesLog += `- ${entryPath} (error reading content: ${readError.message})\n`;
                                             hasSkippedFiles = true;
                                         })
                                 );
                             } else {
                                 if (zipEntry.dir) {
-                                    // Skipping directories is standard/intentional, no need to log unless debugging
+                                    // Skipping directories is standard
                                 } else if (isDotFileOrInDotFolder) {
-                                    // console.log(`Skipping dotfile/folder: ${entryPath}`); // Keep console log
                                     skippedFilesLog += `- ${entryPath} (dotfile/in dotfolder)\n`; hasSkippedFiles = true;
                                 } else if (isImageFile) {
-                                    // console.log(`Skipping image file: ${entryPath}`); // Keep console log
                                     skippedFilesLog += `- ${entryPath} (image file)\n`; hasSkippedFiles = true;
                                 } else if (isBinaryLikeFile) {
-                                     // console.log(`Skipping binary-like file by extension: ${entryPath}`); // Keep console log
                                      skippedFilesLog += `- ${entryPath} (binary-like extension)\n`; hasSkippedFiles = true;
                                 }
                             }
                         });
 
-                        // Wait for all file reading promises to resolve
                         await Promise.all(fileProcessingPromises);
 
-                        // Add the skipped files log at the end if there were any
+                        // MODIFIED: The skipped files log is prepared for UI but NOT added to outputString
                         if (hasSkippedFiles) {
-                             skippedFilesLog = skippedFilesLog.trim(); // Clean up the log
-                            // console.log("\n--- Skipped Files/Directories Log ---"); // Keep console log
-                            // console.log(skippedFilesLog); // Keep console log
-                            outputString += "\n--- Log of Skipped Files/Directories ---\n" + skippedFilesLog + "\n";
+                             skippedFilesLog = skippedFilesLog.trim(); // Clean up the log for UI display
+                            // outputString += "\n--- Log of Skipped Files/Directories ---\n" + skippedFilesLog + "\n"; // MODIFIED: Removed log from outputString
                         }
 
 
@@ -634,7 +622,7 @@ code
                                 summary.style.cursor = 'pointer';
                                 summary.style.marginTop = '10px';
                                 const pre = document.createElement('pre');
-                                pre.textContent = skippedFilesLog;
+                                pre.textContent = skippedFilesLog; // Display the cleaned-up log
                                 pre.style.textAlign = 'left';
                                 pre.style.maxHeight = '200px';
                                 pre.style.overflowY = 'auto';
@@ -642,25 +630,21 @@ code
                                 pre.style.padding = '10px';
                                 pre.style.border = '1px solid var(--border-color)';
                                 pre.style.borderRadius = 'var(--border-radius)';
-                                pre.style.whiteSpace = 'pre-wrap'; /* Ensure text wraps */
-                                pre.style.wordBreak = 'break-word'; /* Break long words */
+                                pre.style.whiteSpace = 'pre-wrap';
+                                pre.style.wordBreak = 'break-word';
                                 details.appendChild(summary);
                                 details.appendChild(pre);
-                                outputArea.querySelector('.message > div').appendChild(details); // Append to the div inside the message
+                                outputArea.querySelector('.message > div').appendChild(details); 
                             }
                         } else {
-                            // --- Success State: Add Download and Copy Buttons ---
-
-                            // 1. Add Success Message
                             const successMessage = document.createElement('div');
-                            successMessage.classList.add('message', 'info-message'); // Using info for less "in your face" success
+                            successMessage.classList.add('message', 'info-message'); 
                             successMessage.innerHTML = `
                                 <i class="fa-solid fa-check-circle"></i>
                                 <div><strong>Success!</strong> Your CodeStack is ready. ${processedFileCount} file(s) processed.</div>
                             `;
                             outputArea.appendChild(successMessage);
 
-                             // Add skipped files log details under the message if any
                              if (hasSkippedFiles) {
                                 const details = document.createElement('details');
                                 const summary = document.createElement('summary');
@@ -668,7 +652,7 @@ code
                                 summary.style.cursor = 'pointer';
                                 summary.style.marginTop = '10px';
                                 const pre = document.createElement('pre');
-                                pre.textContent = skippedFilesLog;
+                                pre.textContent = skippedFilesLog; // Display the cleaned-up log
                                 pre.style.textAlign = 'left';
                                 pre.style.maxHeight = '200px';
                                 pre.style.overflowY = 'auto';
@@ -676,60 +660,52 @@ code
                                 pre.style.padding = '10px';
                                 pre.style.border = '1px solid var(--border-color)';
                                 pre.style.borderRadius = 'var(--border-radius)';
-                                pre.style.whiteSpace = 'pre-wrap'; /* Ensure text wraps */
-                                pre.style.wordBreak = 'break-word'; /* Break long words */
+                                pre.style.whiteSpace = 'pre-wrap'; 
+                                pre.style.wordBreak = 'break-word'; 
                                 details.appendChild(summary);
                                 details.appendChild(pre);
-                                successMessage.querySelector('div').appendChild(details); // Append to the div inside the message
+                                successMessage.querySelector('div').appendChild(details); 
                             }
 
-                            // 2. Create a container for buttons
                             const outputActions = document.createElement('div');
                             outputActions.classList.add('output-actions');
 
-                            // 3. Create Download Link (as a button)
                             const blob = new Blob([outputString.trimEnd()], { type: 'text/plain;charset=utf-8' });
                             const downloadUrl = URL.createObjectURL(blob);
                             const downloadLink = document.createElement('a');
                             downloadLink.href = downloadUrl;
                             const filename = `${originalZipName}_stack.txt`;
                             downloadLink.download = filename;
-                            downloadLink.innerHTML = `<i class="fa-solid fa-download"></i> Download`; // Changed icon
+                            downloadLink.innerHTML = `<i class="fa-solid fa-download"></i> Download`; 
                             downloadLink.classList.add('btn', 'btn-success');
                             outputActions.appendChild(downloadLink);
 
-                            // 4. Create Copy Button
                             const copyButton = document.createElement('button');
-                            copyButton.type = 'button'; // Important for button not to submit form
+                            copyButton.type = 'button'; 
                             copyButton.innerHTML = `<i class="fa-solid fa-copy"></i> Copy`;
-                            copyButton.classList.add('btn', 'btn-secondary'); // Use the new secondary style
+                            copyButton.classList.add('btn', 'btn-secondary'); 
                             outputActions.appendChild(copyButton);
 
-                            // 5. Add Button Container to Output Area
                             outputArea.appendChild(outputActions);
 
-                            // 6. Add Copy Functionality
                             const originalCopyButtonHTML = copyButton.innerHTML;
                             copyButton.addEventListener('click', async () => {
                                 try {
-                                    await navigator.clipboard.writeText(outputString.trimEnd()); // Copy the trimmed content
-                                    // Provide feedback
-                                    copyButton.innerHTML = '<i class="fa-solid fa-check"></i> Copied!'; // Change icon and text
-                                    copyButton.disabled = true; // Disable during feedback
-                                    // Revert after a few seconds
+                                    await navigator.clipboard.writeText(outputString.trimEnd()); 
+                                    copyButton.innerHTML = '<i class="fa-solid fa-check"></i> Copied!'; 
+                                    copyButton.disabled = true; 
                                     setTimeout(() => {
                                         copyButton.innerHTML = originalCopyButtonHTML;
-                                        copyButton.disabled = false; // Re-enable
-                                    }, 2500); // Show "Copied!" for 2.5 seconds
+                                        copyButton.disabled = false; 
+                                    }, 2500); 
                                 } catch (err) {
                                     console.error('Failed to copy text:', err);
-                                    // Provide error feedback (optional, could just log error)
-                                     copyButton.innerHTML = '<i class="fa-solid fa-xmark"></i> Copy Failed'; // Change icon and text
-                                      copyButton.disabled = true; // Disable during feedback
+                                     copyButton.innerHTML = '<i class="fa-solid fa-xmark"></i> Copy Failed'; 
+                                      copyButton.disabled = true; 
                                      setTimeout(() => {
                                         copyButton.innerHTML = originalCopyButtonHTML;
-                                        copyButton.disabled = false; // Re-enable
-                                    }, 3000); // Show "Failed" a bit longer
+                                        copyButton.disabled = false; 
+                                    }, 3000); 
                                 }
                             });
                         }
@@ -758,7 +734,7 @@ code
 
                 reader.readAsArrayBuffer(file);
 
-            } catch (error) { // Catch any synchronous error before FileReader starts
+            } catch (error) { 
                 outputArea.innerHTML = `<div class="message error-message">
                                             <i class="fa-solid fa-triangle-exclamation"></i>
                                             <div><strong>Client-Side Error:</strong> ${error.message}</div>
